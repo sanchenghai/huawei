@@ -37,20 +37,20 @@ public final class Demo {
 				break;
 			}
 			len = inputStrArray[i].length();
-			if(len < 9){
+			if(len < iInputLenth + 1){
 				str = inputStrArray[i];
-				for(j = 0; j < 8 - len; j += 1){
+				for(j = 0; j < iInputLenth - len; j += 1){
 					str += "0";
 				}
 				list.add(str);
 			}else{
 				for(j = 0; j < len; ){
-					if(j + 8 < len){
-						list.add(inputStrArray[i].substring(j, j + 8));
-						j += 8;
+					if(j + iInputLenth < len){
+						list.add(inputStrArray[i].substring(j, j + iInputLenth));
+						j += iInputLenth;
 					}else{
 						str = inputStrArray[i].substring(j, len);
-						for(k = 0; k < 8 - len + j; k += 1){
+						for(k = 0; k < iInputLenth - len + j; k += 1){
 							str += "0";
 						}
 						list.add(str);
