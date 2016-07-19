@@ -1,0 +1,69 @@
+#include <iostream>  
+#include <string>  
+#include <vector>  
+#include <algorithm>  
+using namespace std;  
+  
+int main()  
+{  
+    int num;  
+    string str="ABCDEFGHIJ",a;  
+    vector<string> tmp;  
+    cin>>num;   
+    getchar();  
+    getline(cin,a);  
+    str=str.substr(0,num);  
+    tmp.push_back(str);  
+    string substring;  
+    while (next_permutation(str.begin(),str.end()))   
+        tmp.push_back(str);//得到了全排列  
+    for (int i=0;i<tmp.size();i++)//判断出栈序列是否合法  
+    {  
+        /* 
+        假如入栈顺序为1234，给定一个出栈序列，如2431，它是合法的。  
+        因为对于出栈序列中的每一个数字，在它后面的、比它小的所有数字，一定是按递减顺序排列的 
+        */  
+        string s=tmp[i];  
+        int len=s.size();  
+        for (int j=0;j<len-1;j++)  
+        {  
+            substring=s.substr(j+1);  
+            int sublen=substring.length();   
+            for(int k=0;k<sublen;k++)  
+            {  
+                if (substring[k]>s[j])  
+                {  
+                    substring.erase(k);  
+                    sublen--;  
+                }  
+            }  
+            string q=substring;  
+            sort(substring.rbegin(),substring.rend());  
+            if(q!=substring)  
+            {  
+            tmp.erase(i+tmp.begin());   
+            break;  
+            }         
+        }     
+    }  
+  
+    for(int j=0;j<tmp.size();j++)  
+        for (int i=0;i<num;i++)  
+            replace(tmp[j].begin(),tmp[j].end(),str[i],a[i*2]);  
+    sort(tmp.begin(),tmp.end());  
+  
+    for (int i=0;i<tmp.size();i++)  
+    {  
+        string m;  
+        m=tmp[i];  
+        for (int k=0;k<m.size();k++)  
+        {  
+            cout<<m[k];  
+            if(k==m.size()-1)  
+                cout<<endl;  
+            else  
+                cout<<" ";  
+        }  
+    }  
+  
+}  
