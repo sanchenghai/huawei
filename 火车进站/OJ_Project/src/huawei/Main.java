@@ -9,6 +9,7 @@ import java.util.Scanner;
 public class Main {
 
 	/**
+	 * 不对,排序的就不对：private static void trainOut
 	 * @param args
 	 */
 	public static void main(String[] args) {
@@ -51,6 +52,8 @@ public class Main {
       });
 
       StringBuilder builder = new StringBuilder(256);
+      System.out.println(result.size());
+      System.out.println(result.toString());
       for (List<String> list : result) {
           StringBuilder b = new StringBuilder(64);
           for (String s : list) {
@@ -60,7 +63,7 @@ public class Main {
 
           builder.append(b);
       }
-
+      System.out.println(builder.length());
       return builder.toString();
   }
 	
