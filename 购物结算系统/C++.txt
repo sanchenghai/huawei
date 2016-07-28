@@ -1,0 +1,322 @@
+#include<iostream>
+#include<cstdio>
+#include<list>
+#include<string>
+#include<cstring>
+#define MAX_NUM 0xfffffff
+using namespace std;
+typedef struct  
+{
+	int goodID;
+	int goodNums;
+} Good;
+
+bool operator == (Good good1,Good good2)
+{
+	return (good1.goodID==good2.goodID&&good1.goodNums==good2.goodNums);
+}
+
+typedef int (*GetmoneyFun)(int);
+list<Good> g_goods_car;
+int g_money=3000;
+int g_credit=150;
+
+//第一种商品(食品)的支付方式
+int FirstGoodPay1(int goodNums)
+{
+	return goodNums*10;
+}
+
+int FirstGoodPay2(int goodNums)
+{
+	return goodNums*9;
+}
+
+int FirstGoodPay3(int goodNums)
+{
+	int result=goodNums*10;
+	int count=result/100;
+	result-=count*18;
+	return result;
+}
+//第一种商品(食品)的支付方式
+
+//第二种商品（服装）的支付方式
+int SecondGoodPay1(int goodNums)
+{
+	return goodNums*120;
+}
+
+int SecondGoodPay2(int goodNums)
+{
+	int result=goodNums*120;
+	int count=result/200;
+	result-=count*40;
+	return result;
+}
+//第二种商品（服装）的支付方式
+
+//第三种商品（书籍）的支付方式
+int ThirdGoodPay1(int goodNums)
+{
+	return goodNums*30;
+}
+
+int ThirdGoodPay2(int goodNums)
+{
+	return goodNums*15;
+}
+//第三种商品（书籍）的支付方式
+
+GetmoneyFun payFood[3]={FirstGoodPay1,FirstGoodPay2,FirstGoodPay3};
+GetmoneyFun payCloth[2]={SecondGoodPay1,SecondGoodPay2};
+GetmoneyFun payBook[2]={ThirdGoodPay1,ThirdGoodPay2};
+
+void GetFinalPay()
+{
+	int foodNums=0,clothNums=0,bookNums=0;
+	list<Good>::iterator it;
+	for(it=g_goods_car.begin();it!=g_goods_car.end();it++)
+	{
+		if((*it).goodID==0)
+			foodNums+=(*it).goodNums;
+		else if((*it).goodID==1)
+			clothNums+=(*it).goodNums;
+		else
+			bookNums+=(*it).goodNums;
+	}
+	int result=MAX_NUM;
+	bool useCredit=false;
+	for(int i=0;i<3;i++)
+	{
+		for(int j=0;j<2;j++)
+		{
+			for(int k=0;k<2;k++)
+			{
+				int now=payFood[i](foodNums)+payCloth[j](clothNums)+payBook[k](bookNums);
+				if(now>=500)
+				{
+					int payFinal_1=now*0.8<=g_money?now*0.8:MAX_NUM;
+					int payFinal_2=MAX_NUM;
+					int tempPay;
+					if(g_credit>=120)
+					{
+						tempPay=now-120;
+					}
+					else
+					{
+						tempPay=now-g_credit;
+					}
+					payFinal_2=tempPay<=g_money?tempPay:MAX_NUM;
+					if(payFinal_1<=payFinal_2)
+					{
+						now=payFinal_1;
+						useCredit=false;
+					}
+					else
+					{
+						now=payFinal_2;
+						useCredit=true;
+					}
+				}
+				else
+				{
+					if(now>g_money)
+						now=MAX_NUM;
+					else
+						useCredit=false;
+				}
+				if(now<result)
+				{
+					result=now;
+				}
+			}
+		}
+	}
+	if(result<MAX_NUM)
+	{
+		printf("%d\n",result);
+		if(useCredit)
+		{
+			if(g_credit>120)
+			{
+				g_credit-=120;
+				printf("120\n");
+			}
+			else
+			{
+				printf("%d\n",g_credit);
+				g_credit=0;
+			}
+		}
+		else
+		{
+			printf("0\n");
+		}
+		int creditAdd=result/10;
+		printf("%d\n",creditAdd);
+		g_credit+=creditAdd;
+		g_money-=result;
+		g_goods_car.clear();
+	}
+	else
+	{
+		printf("E006\n");
+	}
+}
+
+void Initial()
+{
+	g_goods_car.clear();
+	g_money=3000;
+	g_credit=150;
+	printf("S001\n");
+}
+
+void PickGoods(int goodID,int goodNums)
+{
+	if(goodID<0||goodID>2||goodNums<=0||goodNums>100)
+	{
+		printf("E002\n");
+	}
+	else if(!g_goods_car.empty()&&g_goods_car.size()>=5)
+	{
+		printf("E003\n");
+	}
+	else
+	{
+		Good newGood;
+		newGood.goodID=goodID;
+		newGood.goodNums=goodNums;
+		g_goods_car.push_back(newGood);
+		printf("S002\n");
+	}
+}
+
+void DeleteGoods(int goodID,int goodNums)
+{
+	if(goodID<0||goodID>2||goodNums<=0||goodNums>100)
+	{
+		printf("E002\n");
+	}
+	else if(g_goods_car.empty())
+	{
+		printf("E005\n");
+	}
+	else
+	{
+		list<Good>::iterator it;
+		int count=0;
+		Good now;
+		now.goodID=goodID;
+		now.goodNums=goodNums;
+		for(it=g_goods_car.begin();it!=g_goods_car.end();it++)
+		{
+			if((*it)==now)
+			{
+				count++;
+			}
+		}
+		if(!count)
+		{
+			printf("E004\n");
+		}
+		else
+		{
+			g_goods_car.remove(now);
+			for(int i=0;i<count-1;i++)
+				g_goods_car.push_back(now);
+			printf("S003\n");
+		}
+	}
+}
+
+void BuyGoods()
+{
+	if(g_goods_car.empty())
+	{
+		printf("E005\n");
+	}
+	else
+	{
+		GetFinalPay();
+	}
+}
+
+void Query(int queryType)
+{
+	if(queryType==0)
+	{
+		printf("%d\n",g_money);
+		printf("%d\n",g_credit);
+	}
+	else
+	{
+		int foodNums=0,clothNums=0,bookNums=0;
+		list<Good>::iterator it;
+		for(it=g_goods_car.begin();it!=g_goods_car.end();it++)
+		{
+			if((*it).goodID==0)
+				foodNums+=(*it).goodNums;
+			else if((*it).goodID==1)
+				clothNums+=(*it).goodNums;
+			else
+				bookNums+=(*it).goodNums;
+		}
+		printf("%d\n",g_goods_car.size());
+		printf("%d\n",foodNums);
+		printf("%d\n",clothNums);
+		printf("%d\n",bookNums);
+	}
+}
+
+int main()
+{
+	//freopen("data.txt","r",stdin);
+	char inputStr[200];
+	while(gets(inputStr)!=NULL)
+	{
+		int startPos=0;
+		int len=strlen(inputStr);
+		while(startPos<len&&inputStr[startPos++]==' ');
+		startPos--;
+		switch (inputStr[startPos])
+		{
+		case 'r':
+			Initial();
+			break;
+		case 'o':
+			{
+				int goodID,goodNums;
+				sscanf(&inputStr[startPos+2],"%d",&goodID);
+				sscanf(&inputStr[startPos+4],"%d",&goodNums);
+				PickGoods(goodID,goodNums);
+			}
+			break;
+		case 'c':
+			{
+				int goodID,goodNums;
+				sscanf(&inputStr[startPos+2],"%d",&goodID);
+				sscanf(&inputStr[startPos+4],"%d",&goodNums);
+				DeleteGoods(goodID,goodNums);
+			}
+			break;
+		case 'b':
+			BuyGoods();
+			break;
+		case 'l':
+			{
+				int queryType;
+				sscanf(&inputStr[startPos+2],"%d",&queryType);
+				Query(queryType);
+			}
+			break;
+		case 'e':
+			return 0;
+		default:
+			printf("E001\n");
+			break;
+		}
+	}
+	return 0;
+}
