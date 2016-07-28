@@ -1,0 +1,137 @@
+#include <iostream>
+#include <string>
+#include <sstream>
+
+#include <vector>
+
+using namespace std;
+
+
+/*
+购物结算系统  
+*/
+int money ;
+int points ;
+typedef struct order{
+	int type;
+	int num;
+};
+vector<order> orders;
+const int price[] = {10,120,30};
+string myToString(int num){
+	char ch[20];
+	_itoa_s(num,ch,10);
+	return (string)ch;
+}
+
+string OnCommand(string command){
+	string output = "";
+	if(command[0] == 'r'){
+		money = 3000;
+		points = 150;
+		orders.clear();
+		output = "S001";
+	}else if(command[0] == 'o'){
+		if(command[2]>='0' &&command[2] <= '2'){ 
+			if(orders.size() > 4)
+				return "E003";
+			order o;
+			o.num = atoi(command.substr(4).c_str());
+			if(o.num > 100 || o.num <= 0)
+				return "E002";
+			o.type = atoi(command.substr(2,1).c_str());
+			orders.push_back(o);
+			output = "S002";
+		}else
+			return "E002";
+	}else if(command[0] == 'c'){
+		if(orders.size() == 0 )
+			return "E005";
+		order o;
+		o.num = atoi(command.substr(4).c_str());
+		o.type = atoi(command.substr(2,1).c_str());
+		vector<order>::iterator it = orders.begin();
+		bool deleted = false;
+		while (it != orders.end())
+		{
+			if(it->num == o.num && it->type == o.type){
+				it = orders.erase(it);
+				deleted = true;
+				break;
+			}
+			it ++;
+		}
+		if(deleted)
+			output = "S003";
+		else
+			return "E004";
+
+
+	}else if(command[0] == 'b'){
+		if(orders.size()==0)
+			return "E005";
+		int cost[] ={0,0,0};
+		int costs = 0;
+		for(int i = 0;i < orders.size(); i++){
+			cost[ orders[i].type ] +=  price [ orders[i].type ] * orders[i].num;
+		}
+		if( cost[0] /100 * 18 >(cost[0] - cost[0]* 9 /10))
+			cost[0] -= cost[0] /100 * 18 ;
+		else
+			cost[0] = cost[0] * 9 /10;
+		cost[1] -= cost[1] / 200 * 40;
+		cost[2] /= 2;
+		costs = cost[0] + cost[1] + cost[2];
+
+		int costpoints = 0;
+		int addpoints = 0;
+		if(costs >= 500 ){ 
+			costpoints = points <120 ?points : 120;
+			if((costs -costs*4/5) < costpoints){
+				costs -= costpoints;				
+			}else{
+				costs = costs * 4/5;
+				costpoints = 0;
+			}
+		}
+		addpoints = costs / 10;
+		if(costs > money )
+			return "E006";
+		money -= costs;
+		points += addpoints -costpoints;
+		output = myToString(costs) +'\n' + myToString(costpoints) +'\n'+myToString(addpoints);
+		orders.clear();
+	}else if(command[0] == 'l'){
+		if(command[2] == '0'){
+			output = myToString(money) + '\n' + myToString(points);
+		}else if(command[2] == '1'){
+			int num[] ={0,0,0};
+			for(int i = 0 ; i < orders.size() ; i++){
+				num[ orders[i].type ] += orders[i].num;
+			}
+			output = myToString (orders.size()) + '\n' + myToString(num[0]) + '\n'
+				+ myToString(num[1]) + '\n' + myToString(num[2]);
+
+		}else
+			return "E002";
+
+
+	}
+
+
+	return output;
+}
+
+
+void main(){
+	string command ,output;
+
+	while(true){
+		getline(cin,command);
+		output = OnCommand(command);
+		cout<<output<<endl;
+		if(command == "e" )
+			break;
+	}
+
+}
